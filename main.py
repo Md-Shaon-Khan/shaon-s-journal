@@ -57,16 +57,15 @@ async def lifespan(_: FastAPI):
 
 
 class SafeStatic(StaticFiles):
-    """The project root is served as /static, so only whitelist the public assets.
-    This keeps .env and main.py from ever being downloadable."""
 
-    ALLOWED = {"style.css", "app.js"}
+    ALLOWED = {"style.css", "app.js", "shaon.png"}
 
     async def get_response(self, path, scope):
-        if path not in self.ALLOWED:
+  
+        ext = Path(path).suffix.lower()
+        if path not in self.ALLOWED and ext not in {".png", ".jpg", ".jpeg", ".webp", ".svg"}:
             raise HTTPException(status_code=404)
         return await super().get_response(path, scope)
-
 
 app = FastAPI(title="Nexus KB", lifespan=lifespan)
 app.mount("/static", SafeStatic(directory="."), name="static")
