@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nexus KB</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#/">◈ Nexus KB</a>
+    <nav id="nav"></nav>
+  </header>
+
+  <main class="container">
+    <section id="view-home">
+      <h1 class="hero">Notes, guides and code, in one place.</h1>
+      <div id="home-cats" class="chips"></div>
+      <div id="home-list" class="grid"></div>
+    </section>
+
+    <section id="view-article" hidden>
+      <a class="muted" href="#/">Back to all articles</a>
+      <article id="article-body"></article>
+    </section>
+
+    <section id="view-dashboard" hidden>
+      <div class="row">
+        <h1>Dashboard</h1>
+        <a class="btn primary" href="#/new">New article</a>
+      </div>
+      <div id="dash-list"></div>
+    </section>
+
+    <section id="view-editor" hidden>
+      <div class="row editor-bar">
+        <div class="row">
+          <span id="ed-badge" class="badge">Draft</span>
+          <span id="ed-status" class="muted">Not saved yet</span>
+        </div>
+        <div class="row">
+          <a id="ed-view" class="btn ghost" href="#/" hidden>View article</a>
+          <button id="btn-draft" class="btn ghost" type="button">Save draft</button>
+          <button id="btn-publish" class="btn primary" type="button">Publish</button>
+        </div>
+      </div>
+      <input id="ed-title" class="title-input" type="text" placeholder="Article title" maxlength="200">
+      <div class="row meta-row">
+        <input id="ed-category" type="text" placeholder="Category (e.g. Python)" maxlength="60">
+        <input id="ed-summary" type="text" placeholder="One-line summary" maxlength="500">
+      </div>
+      <div id="add-bar" class="add-bar"></div>
+      <div id="editor-blocks"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

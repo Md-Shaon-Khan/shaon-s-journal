@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin login · Nexus KB</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="login-page">
+  <main class="login-box">
+    <a class="brand" href="/">◈ Nexus KB</a>
+    <h1>Admin login</h1>
+    <p class="muted">Sign in to write and manage articles.</p>
+    <div id="login-form">
+      <label>Username <input id="username" type="text" autocomplete="username" autofocus></label>
+      <label>Password <input id="password" type="password" autocomplete="current-password"></label>
+      <p id="login-error" class="error" role="alert" hidden></p>
+      <button id="login-btn" class="btn primary" type="button">Sign in</button>
+    </div>
+    <a class="muted back-link" href="/">Back to the knowledge base</a>
+  </main>
+  <script>
+    const err = document.getElementById('login-error');
+    async function login() {
+      err.hidden = true;
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value
+          })
+        });
+        if (!res.ok) {
+          const j = await res.json().catch(() => ({}));
+          throw new Error(j.detail || 'Sign in failed');
+        }
+        location.href = '/#/admin';
+      } catch (e) {
+        err.textContent = e.message;
+        err.hidden = false;
+      }
+    }
+    document.getElementById('login-btn').addEventListener('click', login);
+    document.getElementById('login-form').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+  </script>
+</body>
+</html>
