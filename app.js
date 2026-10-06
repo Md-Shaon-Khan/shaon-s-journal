@@ -2,6 +2,7 @@
   'use strict';
 
   // ---------- helpers ----------
+  const SITE = "Shaon's Journal";
   const $ = (sel) => document.querySelector(sel);
   const h = (tag, attrs = {}, ...kids) => {
     const el = document.createElement(tag);
@@ -63,6 +64,8 @@
   let isAdmin = false;
   let editor = null;
   let dragIdx = null;
+  let homeItems = [];
+  let homeCategory = null;
 
   const BLOCKS = {
     heading: { label: 'Heading', make: () => ({ type: 'heading', text: '' }) },
@@ -74,6 +77,39 @@
     github: { label: 'GitHub repo', make: () => ({ type: 'github', url: '', description: '' }) },
   };
   const LANGS = ['javascript', 'typescript', 'python', 'html', 'css', 'bash', 'powershell', 'json', 'sql', 'java', 'c', 'cpp', 'csharp', 'go', 'rust', 'php', 'yaml', 'markdown', 'plaintext'];
+
+  // ---------- theme, menu, progress, pointer glow ----------
+  function initChrome() {
+    const root = document.documentElement;
+    $('#theme-btn').addEventListener('click', () => {
+      const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+      root.dataset.theme = next;
+      try { localStorage.setItem('sj-theme', next); } catch { /* ignore */ }
+    });
+    const menuBtn = $('#menu-btn');
+    menuBtn.addEventListener('click', () => {
+      const open = $('#nav').classList.toggle('open');
+      menuBtn.setAttribute('aria-expanded', String(open));
+      menuBtn.textContent = open ? '✕' : '☰';
+    });
+    $('#nav').addEventListener('click', (e) => { if (e.target.closest('a,button')) closeMenu(); });
+    const bar = $('#progress');
+    window.addEventListener('scroll', () => {
+      const max = document.documentElement.scrollHeight - innerHeight;
+      bar.style.width = (max > 0 ? Math.min(100, (scrollY / max) * 100) : 0) + '%';
+    }, { passive: true });
+    window.addEventListener('pointermove', (e) => {
+      root.style.setProperty('--glow-x', (e.clientX / innerWidth) * 100 + '%');
+      root.style.setProperty('--glow-y', (e.clientY / innerHeight) * 60 + '%');
+    }, { passive: true });
+    $('#q').addEventListener('input', paintHome);
+  }
+  function closeMenu() {
+    $('#nav').classList.remove('open');
+    const b = $('#menu-btn');
+    b.setAttribute('aria-expanded', 'false');
+    b.textContent = '☰';
+  }
 
   // ---------- views ----------
   const VIEWS = ['home', 'article', 'dashboard', 'editor'];
@@ -105,6 +141,28 @@
   }
 
   // ---------- public: home ----------
+  function paintHome() {
+    const q = $('#q').value.trim().toLowerCase();
+    const items = q
+      ? homeItems.filter((a) => (a.title + ' ' + a.summary + ' ' + a.category).toLowerCase().includes(q))
+      : homeItems;
+    const box = $('#home-list');
+    box.replaceChildren();
+    if (!items.length) {
+      box.append(h('p', { class: 'empty' }, q ? 'No articles match "' + $('#q').value.trim() + '".' : 'No published articles here yet.'));
+      return;
+    }
+    items.forEach((a, i) => {
+      const card = h('a', { class: 'card' + (i === 0 && !q ? ' feature' : ''), href: '#/article/' + encodeURIComponent(a.slug) },
+        h('span', { class: 'tag' }, a.category),
+        h('h3', {}, a.title),
+        a.summary ? h('p', {}, a.summary) : null,
+        h('small', { class: 'muted' }, fmtDate(a.published_at)));
+      card.style.setProperty('--i', Math.min(i, 8));
+      box.append(card);
+    });
+  }
+
   async function viewHome(category) {
     const [cats, list] = await Promise.all([
       api('/api/categories'),
@@ -113,16 +171,10 @@
     const chips = $('#home-cats');
     chips.replaceChildren(h('a', { class: 'chip' + (category ? '' : ' active'), href: '#/' }, 'All'));
     cats.forEach((c) => chips.append(h('a', { class: 'chip' + (c === category ? ' active' : ''), href: '#/category/' + encodeURIComponent(c) }, c)));
-    const box = $('#home-list');
-    box.replaceChildren();
-    if (!list.length) box.append(h('p', { class: 'empty' }, 'No published articles here yet.'));
-    list.forEach((a) => box.append(
-      h('a', { class: 'card', href: '#/article/' + encodeURIComponent(a.slug) },
-        h('span', { class: 'tag' }, a.category),
-        h('h3', {}, a.title),
-        a.summary ? h('p', {}, a.summary) : null,
-        h('small', { class: 'muted' }, fmtDate(a.published_at)))
-    ));
+    if (homeCategory !== category) $('#q').value = '';
+    homeCategory = category;
+    homeItems = list;
+    paintHome();
     show('home');
   }
 
@@ -164,21 +216,28 @@
     });
   }
 
+  const readMins = (blocks) => {
+    const words = blocks.reduce((n, b) => n + ((b.text || b.description || '') + ' ').split(/\s+/).filter(Boolean).length, 0);
+    return Math.max(1, Math.round(words / 200));
+  };
+
   async function viewArticle(slug) {
     const a = await api('/api/articles/' + encodeURIComponent(slug));
     const body = $('#article-body');
     const content = h('div', { class: 'content' });
-    renderBlocks(a.blocks || [], content);
+    const blocks = a.blocks || [];
+    renderBlocks(blocks, content);
     body.replaceChildren(
       h('h1', {}, a.title),
       h('div', { class: 'art-meta' },
         h('span', { class: 'tag' }, a.category),
         h('span', { class: 'muted' }, fmtDate(a.published_at || a.updated_at)),
+        h('span', { class: 'muted' }, readMins(blocks) + ' min read'),
         a.status === 'draft' ? h('span', { class: 'badge' }, 'Draft') : null,
         isAdmin ? h('a', { class: 'btn small', href: '#/edit/' + a.id }, 'Edit') : null),
       content
     );
-    document.title = a.title + ' · Nexus KB';
+    document.title = a.title + ' · ' + SITE;
     show('article');
   }
 
@@ -186,6 +245,12 @@
   async function viewDashboard() {
     if (!isAdmin) { location.href = '/login'; return; }
     const list = await api('/api/admin/articles');
+    const live = list.filter((a) => a.status === 'published').length;
+    $('#dash-stats').replaceChildren(
+      h('div', { class: 'stat' }, h('b', {}, list.length), h('span', { class: 'muted' }, 'Total')),
+      h('div', { class: 'stat' }, h('b', {}, live), h('span', { class: 'muted' }, 'Published')),
+      h('div', { class: 'stat' }, h('b', {}, list.length - live), h('span', { class: 'muted' }, 'Drafts'))
+    );
     const box = $('#dash-list');
     if (!list.length) {
       box.replaceChildren(h('p', { class: 'empty' }, 'No articles yet. Create your first one.'));
@@ -404,7 +469,7 @@
     const staying = editor && a === 'edit' && b === editor.id;
     if (!staying) await leaveEditor();
     else return;
-    document.title = 'Nexus KB';
+    document.title = SITE;
     try {
       if (a === 'article' && b) await viewArticle(b);
       else if (a === 'admin') await viewDashboard();
@@ -419,6 +484,7 @@
   }
 
   async function init() {
+    initChrome();
     initEditorControls();
     try { isAdmin = (await api('/api/me')).admin; } catch { isAdmin = false; }
     renderNav();

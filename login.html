@@ -3,12 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin login · Nexus KB</title>
+  <meta name="theme-color" content="#3C204C">
+  <title>Admin login · Shaon's Journal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
+  <script>try{var t=localStorage.getItem('sj-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
 </head>
 <body class="login-page">
   <main class="login-box">
-    <a class="brand" href="/">◈ Nexus KB</a>
+    <a class="brand" href="/"><span class="mark">✦</span>Shaon's Journal</a>
     <h1>Admin login</h1>
     <p class="muted">Sign in to write and manage articles.</p>
     <div id="login-form">
@@ -17,12 +22,14 @@
       <p id="login-error" class="error" role="alert" hidden></p>
       <button id="login-btn" class="btn primary" type="button">Sign in</button>
     </div>
-    <a class="muted back-link" href="/">Back to the knowledge base</a>
+    <a class="muted back-link" href="/">← Back to the journal</a>
   </main>
   <script>
     const err = document.getElementById('login-error');
+    const btn = document.getElementById('login-btn');
     async function login() {
       err.hidden = true;
+      btn.disabled = true;
       try {
         const res = await fetch('/api/login', {
           method: 'POST',
@@ -41,9 +48,10 @@
       } catch (e) {
         err.textContent = e.message;
         err.hidden = false;
+        btn.disabled = false;
       }
     }
-    document.getElementById('login-btn').addEventListener('click', login);
+    btn.addEventListener('click', login);
     document.getElementById('login-form').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
   </script>
 </body>

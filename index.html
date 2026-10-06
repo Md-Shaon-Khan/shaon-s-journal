@@ -3,24 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nexus KB</title>
+  <meta name="theme-color" content="#3C204C">
+  <title>Shaon's Journal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
+  <script>try{var t=localStorage.getItem('sj-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
 </head>
 <body>
+  <div id="progress" class="progress"></div>
   <header class="topbar">
-    <a class="brand" href="#/">◈ Nexus KB</a>
-    <nav id="nav"></nav>
+    <a class="brand" href="#/"><span class="mark">✦</span>Shaon's Journal</a>
+    <div class="top-actions">
+      <nav id="nav"></nav>
+      <button id="theme-btn" class="icon-btn" type="button" aria-label="Toggle light and dark theme">◐</button>
+      <button id="menu-btn" class="icon-btn" type="button" aria-label="Open menu" aria-expanded="false">☰</button>
+    </div>
   </header>
 
   <main class="container">
     <section id="view-home">
-      <h1 class="hero">Notes, guides and code, in one place.</h1>
+      <div class="hero">
+        <h1>Shaon's Journal</h1>
+        <p>Shaon’s Writings — On artificial intelligence, robotics, economics, and contemporary public affairs.</p>
+        <label class="search"><span>⌕</span><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"></label>
+      </div>
       <div id="home-cats" class="chips"></div>
       <div id="home-list" class="grid"></div>
     </section>
 
     <section id="view-article" hidden>
-      <a class="muted" href="#/">Back to all articles</a>
+      <a class="muted" href="#/">← All articles</a>
       <article id="article-body"></article>
     </section>
 
@@ -29,6 +43,7 @@
         <h1>Dashboard</h1>
         <a class="btn primary" href="#/new">New article</a>
       </div>
+      <div id="dash-stats" class="stats"></div>
       <div id="dash-list"></div>
     </section>
 
@@ -39,8 +54,8 @@
           <span id="ed-status" class="muted">Not saved yet</span>
         </div>
         <div class="row">
-          <a id="ed-view" class="btn ghost" href="#/" hidden>View article</a>
-          <button id="btn-draft" class="btn ghost" type="button">Save draft</button>
+          <a id="ed-view" class="btn" href="#/" hidden>View article</a>
+          <button id="btn-draft" class="btn" type="button">Save draft</button>
           <button id="btn-publish" class="btn primary" type="button">Publish</button>
         </div>
       </div>
