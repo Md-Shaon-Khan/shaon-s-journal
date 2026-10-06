@@ -3,39 +3,67 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#3C204C">
+  <meta name="theme-color" content="#C8102E">
   <title>Shaon's Journal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,400;1,500;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
-  <script>try{var t=localStorage.getItem('sj-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+  <script>
+    try {
+      var r = document.documentElement, t = localStorage.getItem('sj-theme');
+      if (t) r.dataset.theme = t;
+      var p = JSON.parse(localStorage.getItem('sj-prefs') || '{}');
+      if (p.accent) r.style.setProperty('--accent-custom', p.accent);
+      if (p.dropcap === false) r.dataset.dropcap = 'off';
+    } catch (e) {}
+  </script>
 </head>
 <body>
   <div id="progress" class="progress"></div>
+
+  <!-- Newspaper masthead -->
+  <div class="masthead">
+    <div class="mast-meta">
+      <span id="m-vol"></span>
+      <span id="m-date"></span>
+      <span id="m-loc"></span>
+    </div>
+    <a class="mast-title" href="#/">Shaon's Journal</a>
+    <p class="mast-tag">On artificial intelligence, robotics, economics, and contemporary public affairs</p>
+  </div>
+
   <header class="topbar">
     <a class="brand" href="#/"><span class="mark">§</span>Shaon's Journal</a>
     <div class="top-actions">
       <nav id="nav"></nav>
+      <button id="custom-btn" class="icon-btn" type="button" aria-label="Customize reading style" aria-controls="custom-panel" aria-expanded="false" title="Customize">Aa</button>
       <button id="theme-btn" class="icon-btn" type="button" aria-label="Toggle light and dark theme">◐</button>
       <button id="menu-btn" class="icon-btn" type="button" aria-label="Open menu" aria-expanded="false">☰</button>
       <a class="avatar" href="#site-footer" title="Shaon Khan"><img src="/static/shaon.png" alt="Md. Shaon Khan" width="44" height="44"></a>
     </div>
   </header>
 
+  <aside id="custom-panel" class="panel" aria-label="Customize"></aside>
+
   <main class="container">
     <section id="view-home">
-      <div class="hero">
-        <h1>Shaon's Journal</h1>
-        <p>Shaon’s Writings - On artificial intelligence, robotics, economics, and contemporary public affairs.</p>
+      <div class="home-tools">
         <label class="search"><span>⌕</span><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"></label>
+        <div id="home-cats" class="chips"></div>
       </div>
-      <div id="home-cats" class="chips"></div>
+
+      <div id="front" class="front">
+        <div id="home-lead" class="lead"></div>
+        <aside id="home-inside" class="inside"></aside>
+      </div>
+
+      <h2 id="more-title" class="section-title">More stories</h2>
       <div id="home-list" class="grid"></div>
     </section>
 
     <section id="view-article" hidden>
-      <a class="muted" href="#/">← All articles</a>
+      <a class="muted ul back" href="#/">← All articles</a>
       <article id="article-body"></article>
     </section>
 
@@ -62,9 +90,16 @@
       </div>
       <input id="ed-title" class="title-input" type="text" placeholder="Article title" maxlength="200">
       <div class="row meta-row">
-        <input id="ed-category" type="text" placeholder="Category (e.g. Python)" maxlength="60">
-        <input id="ed-summary" type="text" placeholder="One-line summary" maxlength="500">
+        <input id="ed-category" type="text" placeholder="Category (e.g. AI)" maxlength="60">
+        <input id="ed-author" type="text" placeholder="Author name" maxlength="80">
       </div>
+      <div class="row meta-row">
+        <input id="ed-tags" type="text" placeholder="Tags, comma separated (ML, AI, LLM)" maxlength="200">
+      </div>
+      <div class="row meta-row">
+        <input id="ed-summary" type="text" placeholder="One-line summary (shown as the deck under the headline)" maxlength="500">
+      </div>
+      <p class="muted hint">Inline formatting in text blocks: <code>**bold**</code> <code>*italic*</code> <code>__accent underline__</code> <code>==highlight==</code> <code>[link text](https://url)</code></p>
       <div id="add-bar" class="add-bar"></div>
       <div id="editor-blocks"></div>
     </section>

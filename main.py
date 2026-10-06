@@ -35,7 +35,8 @@ print(f"[info] .env path: {BASE_DIR / '.env'} (exists: {(BASE_DIR / '.env').exis
 print(f"[info] Admin username: {ADMIN_USERNAME!r}, password length: {len(ADMIN_PASSWORD)}")
 ALGO = "HS256"
 TOKEN_HOURS = 12
-BLOCK_TYPES = {"heading", "subheading", "text", "code", "image", "callout", "github"}
+BLOCK_TYPES = {"heading", "subheading", "text", "code", "image", "callout", "github", "quote", "divider"}
+DEFAULT_AUTHOR = "Md. Shaon Khan"
 
 client = AsyncIOMotorClient(MONGODB_URI, serverSelectionTimeoutMS=8000)
 articles = client["nexus_kb"]["articles"]
@@ -81,6 +82,8 @@ class ArticleIn(BaseModel):
     title: str = Field(min_length=1, max_length=200)
     category: str = Field(default="General", max_length=60)
     summary: str = Field(default="", max_length=500)
+    author: str = Field(default=DEFAULT_AUTHOR, max_length=80)
+    tags: list[str] = []
     status: Literal["draft", "published"] = "draft"
     blocks: list[dict[str, Any]] = []
 
@@ -114,6 +117,9 @@ def ser(doc: dict, full: bool = True) -> dict:
         "category": doc.get("category", "General"),
         "summary": doc.get("summary", ""),
         "status": doc.get("status", "draft"),
+        "author": doc.get("author") or DEFAULT_AUTHOR,
+        "tags": doc.get("tags", []),
+        "read_mins": doc.get("read_mins"),
         "created_at": fmt(doc.get("created_at")),
         "updated_at": fmt(doc.get("updated_at")),
         "published_at": fmt(doc.get("published_at")),
@@ -136,6 +142,23 @@ def oid(value: str) -> ObjectId:
 
 def clean_blocks(blocks: list[dict]) -> list[dict]:
     return [b for b in blocks if isinstance(b, dict) and b.get("type") in BLOCK_TYPES]
+
+
+def clean_tags(tags: list[str]) -> list[str]:
+    out: list[str] = []
+    for t in tags:
+        t = str(t).strip()[:30]
+        if t and t.lower() not in {x.lower() for x in out}:
+            out.append(t)
+    return out[:8]
+
+
+def read_mins(blocks: list[dict]) -> int:
+    words = 0
+    for b in blocks:
+        for key in ("text", "description"):
+            words += len(str(b.get(key) or "").split())
+    return max(1, round(words / 200))
 
 
 async def unique_slug(title: str) -> str:
@@ -230,7 +253,10 @@ async def admin_create(data: ArticleIn):
         "category": data.category.strip() or "General",
         "summary": data.summary.strip(),
         "status": data.status,
+        "author": data.author.strip() or DEFAULT_AUTHOR,
+        "tags": clean_tags(data.tags),
         "blocks": clean_blocks(data.blocks),
+        "read_mins": read_mins(clean_blocks(data.blocks)),
         "created_at": now,
         "updated_at": now,
         "published_at": now if data.status == "published" else None,
@@ -254,7 +280,10 @@ async def admin_update(article_id: str, data: ArticleIn):
         "category": data.category.strip() or "General",
         "summary": data.summary.strip(),
         "status": data.status,
+        "author": data.author.strip() or DEFAULT_AUTHOR,
+        "tags": clean_tags(data.tags),
         "blocks": clean_blocks(data.blocks),
+        "read_mins": read_mins(clean_blocks(data.blocks)),
         "updated_at": now,
         "published_at": published_at,
     }
