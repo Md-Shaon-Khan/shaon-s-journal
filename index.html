@@ -19,6 +19,7 @@
       <nav id="nav"></nav>
       <button id="theme-btn" class="icon-btn" type="button" aria-label="Toggle light and dark theme">◐</button>
       <button id="menu-btn" class="icon-btn" type="button" aria-label="Open menu" aria-expanded="false">☰</button>
+      <a class="avatar" href="#site-footer" title="Shaon Khan"><img src="shaon.png" alt="Md. Shaon Khan" width="44" height="44"></a>
     </div>
   </header>
 
@@ -26,7 +27,7 @@
     <section id="view-home">
       <div class="hero">
         <h1>Shaon's Journal</h1>
-        <p>Shaon’s Writings — On artificial intelligence, robotics, economics, and contemporary public affairs.</p>
+        <p>Shaon’s Writings - On artificial intelligence, robotics, economics, and contemporary public affairs.</p>
         <label class="search"><span>⌕</span><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"></label>
       </div>
       <div id="home-cats" class="chips"></div>
@@ -68,6 +69,22 @@
       <div id="editor-blocks"></div>
     </section>
   </main>
+
+  <footer id="site-footer" class="footer">
+    <div class="footer-in">
+      <div class="footer-brand">
+        <strong>Shaon's Journal</strong>
+        <span class="muted">© <span id="yr"></span> Md. Shaon Khan</span>
+      </div>
+      <nav class="footer-links" aria-label="Contact and social links">
+        <a href="https://github.com/Md-Shaon-Khan/Md-Shaon-Khan/" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://www.linkedin.com/in/md-shaon-khan-01003433a/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="https://www.facebook.com/sa.ona.khana.803112" target="_blank" rel="noopener noreferrer">Facebook</a>
+        <a href="mailto:shaon.iit52@gmail.com">shaon.iit52@gmail.com</a>
+      </nav>
+    </div>
+  </footer>
+  <script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
 
   <div id="toast" class="toast" role="status"></div>
   <script src="/static/app.js"></script>
