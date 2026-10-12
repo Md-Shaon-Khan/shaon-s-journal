@@ -35,7 +35,7 @@ print(f"[info] .env path: {BASE_DIR / '.env'} (exists: {(BASE_DIR / '.env').exis
 print(f"[info] Admin username: {ADMIN_USERNAME!r}, password length: {len(ADMIN_PASSWORD)}")
 ALGO = "HS256"
 TOKEN_HOURS = 12
-BLOCK_TYPES = {"heading", "subheading", "text", "code", "image", "callout", "github", "quote", "divider"}
+BLOCK_TYPES = {"heading", "subheading", "text", "code", "image", "callout", "github", "quote", "divider", "formula"}
 DEFAULT_AUTHOR = "Md. Shaon Khan"
 
 client = AsyncIOMotorClient(MONGODB_URI, serverSelectionTimeoutMS=8000)

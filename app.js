@@ -234,6 +234,7 @@
     callout: { label: 'Callout', make: () => ({ type: 'callout', text: '' }) },
     divider: { label: 'Divider', make: () => ({ type: 'divider', variant: 'line' }) },
     github: { label: 'GitHub repo', make: () => ({ type: 'github', url: '', description: '' }) },
+    formula: { label: 'Formula (LaTeX)', make: () => ({ type: 'formula', latex: '' }) },
   };
   const STYLED = new Set(['heading', 'subheading', 'text', 'callout', 'quote']);
   const LANGS = ['python', 'javascript', 'typescript', 'html', 'css', 'bash', 'powershell', 'json', 'sql', 'java', 'c', 'cpp', 'csharp', 'go', 'rust', 'php', 'yaml', 'markdown', 'plaintext'];
@@ -469,6 +470,24 @@
     show('home');
   }
 
+  // ---------- LaTeX (KaTeX) ----------
+  // Accepts raw LaTeX, and also tolerates pasted $$...$$ or \[...\] wrappers.
+  const stripMathDelims = (s) => {
+    s = String(s || '').trim();
+    let m = /^\$\$([\s\S]*?)\$\$$/.exec(s) || /^\\\[([\s\S]*?)\\\]$/.exec(s);
+    return m ? m[1].trim() : s;
+  };
+  function renderLatex(latex, target) {
+    const src = stripMathDelims(latex);
+    target.replaceChildren();
+    if (!src) return;
+    if (window.katex && typeof window.katex.render === 'function') {
+      window.katex.render(src, target, { displayMode: true, throwOnError: false });
+    } else {
+      target.textContent = src; // KaTeX failed to load: show raw LaTeX
+    }
+  }
+
   // ---------- public: article ----------
   function renderBlocks(blocks, root) {
     let dropDone = false;
@@ -511,6 +530,13 @@
           break;
         }
         case 'callout': root.append(applyStyle(h('div', { class: 'callout' }, inline(b.text)), b.style)); break;
+        case 'formula': {
+          if (!stripMathDelims(b.latex)) break;
+          const wrap = h('div', { class: 'formula', style: 'overflow-x:auto;margin:1.2em 0;' });
+          renderLatex(b.latex, wrap);
+          root.append(wrap);
+          break;
+        }
         case 'github': {
           const url = safeUrl(b.url);
           if (!url) break;
@@ -721,6 +747,22 @@
         return [sel];
       }
       case 'github': return [field(b, 'url', 'https://github.com/owner/repo'), field(b, 'description', 'Short description (optional)')];
+      case 'formula': {
+        const input = field(b, 'latex', 'LaTeX, e.g. \\mathcal{L}_{MSE} = \\frac{1}{n}\\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2', 'textarea', 'mono');
+        const preview = h('div', { class: 'formula formula-preview', style: 'overflow-x:auto;margin-top:10px;padding:10px 12px;border:1px dashed var(--line, rgba(128,128,128,.4));border-radius:6px;min-height:2.2em;' });
+        const paint = () => {
+          if (!stripMathDelims(b.latex)) {
+            preview.textContent = 'Live preview appears here';
+            preview.style.opacity = '0.55';
+            return;
+          }
+          preview.style.opacity = '';
+          renderLatex(b.latex, preview);
+        };
+        input.addEventListener('input', paint);
+        paint();
+        return [input, preview];
+      }
       default: return [];
     }
   }
